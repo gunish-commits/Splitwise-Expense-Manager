@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>SplitEase — Expense Manager</title>
+  <link href="https://fonts.googleapis.com/css2?family=Clash+Display:wght@400;500;600;700&family=Cabinet+Grotesk:wght@300;400;500;700&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+<!-- ═══════════════════════════════ APP SHELL ═══════════════════════════════ -->
+<div class="app">
+
+  <!-- TOP NAV -->
+  <nav class="nav">
+    <div class="nav-brand">
+      <div class="nav-logo">S</div>
+      <span class="nav-title">SplitEase</span>
+    </div>
+    <div class="nav-tabs">
+      <button class="tab-btn active" data-tab="expenses" onclick="switchTab('expenses')">Expenses</button>
+      <button class="tab-btn" data-tab="members" onclick="switchTab('members')">Members</button>
+      <button class="tab-btn" data-tab="settle" onclick="switchTab('settle')">Settle Up</button>
+    </div>
+    <button class="reset-btn" onclick="resetAll()" title="Reset all data">↺ Reset</button>
+  </nav>
+
+  <!-- ══════════════ TAB: EXPENSES ══════════════ -->
+  <div class="tab-content active" id="tab-expenses">
+
+    <!-- Summary Cards -->
+    <div class="summary-row" id="summaryRow">
+      <div class="summary-card total">
+        <div class="summary-icon">💸</div>
+        <div class="summary-info">
+          <div class="summary-num" id="totalSpent">₹0</div>
+          <div class="summary-label">Total Spent</div>
+        </div>
+      </div>
+      <div class="summary-card members">
+        <div class="summary-icon">👥</div>
+        <div class="summary-info">
+          <div class="summary-num" id="memberCount">0</div>
+          <div class="summary-label">Members</div>
+        </div>
+      </div>
+      <div class="summary-card txns">
+        <div class="summary-icon">🧾</div>
+        <div class="summary-info">
+          <div class="summary-num" id="txnCount">0</div>
+          <div class="summary-label">Transactions</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Add Expense Form -->
+    <div class="card form-card">
+      <div class="card-header">
+        <h2 class="card-title">Add Expense</h2>
+        <div class="card-badge">New</div>
+      </div>
+
+      <div class="form-grid">
+        <div class="field">
+          <label class="field-label">Description</label>
+          <input class="field-input" id="expDesc" type="text" placeholder="e.g. Dinner at Pizza Hut" maxlength="60" />
+        </div>
+        <div class="field">
+          <label class="field-label">Amount (₹)</label>
+          <input class="field-input" id="expAmount" type="number" placeholder="0.00" min="1" step="0.01" />
+        </div>
+        <div class="field">
+          <label class="field-label">Paid By</label>
+          <select class="field-input" id="expPaidBy">
+            <option value="">Select member</option>
+          </select>
+        </div>
+        <div class="field">
+          <label class="field-label">Category</label>
+          <select class="field-input" id="expCategory">
+            <option value="🍕 Food">🍕 Food</option>
+            <option value="🚗 Travel">🚗 Travel</option>
+            <option value="🏠 Rent">🏠 Rent</option>
+            <option value="🎮 Entertainment">🎮 Entertainment</option>
+            <option value="🛒 Shopping">🛒 Shopping</option>
+            <option value="💊 Health">💊 Health</option>
+            <option value="📦 Other">📦 Other</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="field split-field">
+        <label class="field-label">Split Among</label>
+        <div class="split-note">Select who shares this expense</div>
+        <div class="members-check-list" id="splitAmongList">
+          <div class="no-members-hint">Add members first from the Members tab</div>
+        </div>
+        <div class="split-actions">
+          <button class="split-quick-btn" onclick="selectAllSplit()">Select All</button>
+          <button class="split-quick-btn" onclick="clearSplit()">Clear</button>
+        </div>
+      </div>
+
+      <button class="btn-primary" onclick="addExpense()">+ Add Expense</button>
+    </div>
+
+    <!-- Expense List -->
+    <div class="card">
+      <div class="card-header">
+        <h2 class="card-title">All Expenses</h2>
+        <div class="expense-count" id="expenseCountBadge">0 expenses</div>
+      </div>
+      <div id="expenseList">
+        <div class="empty-state">
+          <div class="empty-emoji">🧾</div>
+          <div class="empty-title">No expenses yet</div>
+          <div class="empty-sub">Add your first expense above</div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ══════════════ TAB: MEMBERS ══════════════ -->
+  <div class="tab-content" id="tab-members">
+
+    <div class="card form-card">
+      <div class="card-header">
+        <h2 class="card-title">Add Member</h2>
+        <div class="card-badge">New</div>
+      </div>
+      <div class="add-member-row">
+        <input class="field-input" id="memberName" type="text" placeholder="Enter name..." maxlength="20" />
+        <button class="btn-primary" onclick="addMember()">+ Add</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        <h2 class="card-title">Group Members</h2>
+        <div class="expense-count" id="memberCountBadge">0 members</div>
+      </div>
+      <div id="memberList">
+        <div class="empty-state">
+          <div class="empty-emoji">👤</div>
+          <div class="empty-title">No members yet</div>
+          <div class="empty-sub">Add people to your group first</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Per Person Summary -->
+    <div class="card" id="perPersonCard" style="display:none">
+      <div class="card-header">
+        <h2 class="card-title">Per Person Summary</h2>
+      </div>
+      <div id="perPersonList"></div>
+    </div>
+
+  </div>
+
+  <!-- ══════════════ TAB: SETTLE UP ══════════════ -->
+  <div class="tab-content" id="tab-settle">
+
+    <div class="card">
+      <div class="card-header">
+        <h2 class="card-title">Who Owes Whom</h2>
+        <div class="card-badge">Smart Split</div>
+      </div>
+      <div id="settleList">
+        <div class="empty-state">
+          <div class="empty-emoji">🤝</div>
+          <div class="empty-title">All settled up!</div>
+          <div class="empty-sub">Add expenses to see settlements</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card" id="balanceSummaryCard">
+      <div class="card-header">
+        <h2 class="card-title">Balance Sheet</h2>
+      </div>
+      <div id="balanceSummary"></div>
+    </div>
+
+  </div>
+
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<!-- CONFIRM MODAL -->
+<div class="modal-overlay" id="modalOverlay" onclick="closeModal()">
+  <div class="modal" onclick="event.stopPropagation()">
+    <div class="modal-title" id="modalTitle">Confirm</div>
+    <div class="modal-body" id="modalBody"></div>
+    <div class="modal-actions">
+      <button class="modal-cancel" onclick="closeModal()">Cancel</button>
+      <button class="modal-confirm" id="modalConfirm">Confirm</button>
+    </div>
+  </div>
+</div>
+
+<script src="script.js"></script>
+</body>
+</html>
